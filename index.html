@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إكس أو الروبوت الخارق 🤖🔥</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: radial-gradient(circle, #0f172a, #020617);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+        .game-card {
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(56, 189, 248, 0.3);
+            border-radius: 25px;
+            padding: 20px;
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+            position: relative;
+        }
+        h1 {
+            color: #38bdf8;
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        p {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+        
+        /* تصميم لوحة النتائج */
+        .scoreboard {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid #334155;
+            border-radius: 14px;
+            padding: 10px 15px;
+            margin-bottom: 12px;
+        }
+        .score-box {
+            text-align: center;
+        }
+        .score-box span {
+            display: block;
+            font-size: 11px;
+            color: #94a3b8;
+        }
+        .score-box strong {
+            font-size: 16px;
+        }
+        #player-score { color: #38bdf8; }
+        #draw-score { color: #facc15; }
+        #bot-score { color: #f43f5e; }
+
+        .board-container {
+            position: relative;
+            width: 280px;
+            margin: 0 auto 15px auto;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 100%;
+        }
+        .cell {
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 14px;
+            aspect-ratio: 1;
+            font-size: 40px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .cell:hover {
+            border-color: #38bdf8;
+        }
+        .cell.x {
+            color: #38bdf8;
+        }
+        .cell.o {
+            color: #f43f5e;
+        }
+        
+        .winning-line {
+            position: absolute;
+            background: #4ade80;
+            border-radius: 10px;
+            display: none;
+            box-shadow: 0 0 15px #4ade80;
+            pointer-events: none;
+        }
+
+        .status-msg {
+            font-size: 14px;
+            font-weight: bold;
+            color: #facc15;
+            margin-bottom: 12px;
+            min-height: 20px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .action-btn {
+            background: linear-gradient(135deg, #38bdf8, #0284c7);
+            color: white;
+            border: none;
+            padding: 9px 15px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
+            transition: 0.2s;
+        }
+        .reset-stats {
+            background: linear-gradient(135deg, #64748b, #475569);
+            box-shadow: 0 4px 15px rgba(100, 116, 139, 0.4);
+        }
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+        .footer {
+            margin-top: 12px;
+            color: #64748b;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-card">
+        <h1>إكس أو الروبوت الخارق 🤖🔥</h1>
+        <p>تحدَّ العبقري.. هل تستطيع هزيمته حقاً؟</p>
+
+        <!-- صندوق النتائج -->
+        <div class="scoreboard">
+            <div class="score-box">
+                <span>انت (X)</span>
+                <strong id="player-score">0</strong>
+            </div>
+            <div class="score-box">
+                <span>تعادل</span>
+                <strong id="draw-score">0</strong>
+            </div>
+            <div class="score-box">
+                <span>الروبوت (O)</span>
+                <strong id="bot-score">0</strong>
+            </div>
+        </div>
+
+        <div class="status-msg" id="status">دورك يا بطل (اضغط على أي مربع)</div>
+
+        <div class="board-container">
+            <div class="board" id="board">
+                <div class="cell" onclick="makeMove(0)"></div>
+                <div class="cell" onclick="makeMove(1)"></div>
+                <div class="cell" onclick="makeMove(2)"></div>
+                <div class="cell" onclick="makeMove(3)"></div>
+                <div class="cell" onclick="makeMove(4)"></div>
+                <div class="cell" onclick="makeMove(5)"></div>
+                <div class="cell" onclick="makeMove(6)"></div>
+                <div class="cell" onclick="makeMove(7)"></div>
+                <div class="cell" onclick="makeMove(8)"></div>
+            </div>
+            <div id="line" class="winning-line"></div>
+        </div>
+
+        <div class="btn-group">
+            <button class="action-btn" onclick="resetGame()">لعبة جديدة 🔄</button>
+            <button class="action-btn reset-stats" onclick="resetScores()">تصفير النتائج 🗑️</button>
+        </div>
+
+        <div class="footer">
+            تم البرمجة بواسطة مراد المبدع 📱💻 2026
+        </div>
+    </div>
+
+    <script>
+        let board = ["", "", "", "", "", "", "", "", ""];
+        let gameActive = true;
+
+        // متغيرات النتائج وقراءتها من ذاكرة الهاتف (localStorage)
+        let scores = JSON.parse(localStorage.getItem("xo_scores")) || { player: 0, bot: 0, draw: 0 };
+        
+        updateScoreboard();
+
+        const statusDisplay = document.getElementById("status");
+        const cells = document.querySelectorAll(".cell");
+        const line = document.getElementById("line");
+
+        function makeMove(index) {
+            if (board[index] === "" && gameActive) {
+                board[index] = "X";
+                cells[index].innerText = "X";
+                cells[index].classList.add("x");
+
+                let winData = checkWinFor("X");
+                if (winData) {
+                    statusDisplay.innerHTML = "🎉 مستحيل! لقد هزمت الروبوت! 🚀👑";
+                    drawWinningLine(winData);
+                    gameActive = false;
+                    scores.player++;
+                    saveAndToggleScores();
+                    return;
+                }
+
+                if (board.every(cell => cell !== "")) {
+                    statusDisplay.innerHTML = "🤝 تعادل! عقلان عبقريان!";
+                    gameActive = false;
+                    scores.draw++;
+                    saveAndToggleScores();
+                    return;
+                }
+
+                statusDisplay.innerHTML = "🤖 الروبوت يحسب الخطوة...";
+                setTimeout(botMove, 500);
+            }
+        }
+
+        function botMove() {
+            if (!gameActive) return;
+
+            let bestScore = -Infinity;
+            let bestMove;
+            
+            for (let i = 0; i < 9; i++) {
+                if (board[i] === "") {
+                    board[i] = "O";
+                    let score = minimax(board, 0, false);
+                    board[i] = "";
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove = i;
+                    }
+                }
+            }
+
+            board[bestMove] = "O";
+            cells[bestMove].innerText = "O";
+            cells[bestMove].classList.add("o");
+
+            let winData = checkWinFor("O");
+            if (winData) {
+                statusDisplay.innerHTML = "🤖 الروبوت سحقك! حاول مجدداً 💪";
+                drawWinningLine(winData);
+                gameActive = false;
+                scores.bot++;
+                saveAndToggleScores();
+                return;
+            }
+
+            if (board.every(cell => cell !== "")) {
+                statusDisplay.innerHTML = "🤝 تعادل! عقلان عبقريان!";
+                gameActive = false;
+                scores.draw++;
+                saveAndToggleScores();
+                return;
+            }
+
+            statusDisplay.innerHTML = "دورك يا بطل!";
+        }
+
+        function minimax(currentBoard, depth, isMaximizing) {
+            if (checkWinFor("O")) return 10 - depth;
+            if (checkWinFor("X")) return depth - 10;
+            if (currentBoard.every(cell => cell !== "")) return 0;
+
+            if (isMaximizing) {
+                let maxEval = -Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (currentBoard[i] === "") {
+                        currentBoard[i] = "O";
+                        let evaluation = minimax(currentBoard, depth + 1, false);
+                        currentBoard[i] = "";
+                        maxEval = Math.max(maxEval, evaluation);
+                    }
+                }
+                return maxEval;
+            } else {
+                let minEval = Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (currentBoard[i] === "") {
+                        currentBoard[i] = "X";
+                        let evaluation = minimax(currentBoard, depth + 1, true);
+                        currentBoard[i] = "";
+                        minEval = Math.min(minEval, evaluation);
+                    }
+                }
+                return minEval;
+            }
+        }
+
+        function checkWinFor(player) {
+            const conditions = [
+                { indices: [0, 1, 2], type: 'h', pos: '16.5%' },
+                { indices: [3, 4, 5], type: 'h', pos: '50%' },
+                { indices: [6, 7, 8], type: 'h', pos: '83.5%' },
+                { indices: [0, 3, 6], type: 'v', pos: '16.5%' },
+                { indices: [1, 4, 7], type: 'v', pos: '50%' },
+                { indices: [2, 5, 8], type: 'v', pos: '83.5%' },
+                { indices: [0, 4, 8], type: 'd1' },
+                { indices: [2, 4, 6], type: 'd2' }
+            ];
+
+            for (let condition of conditions) {
+                let [a, b, c] = condition.indices;
+                if (board[a] === player && board[b] === player && board[c] === player) {
+                    return condition;
+                }
+            }
+            return null;
+        }
+
+        function drawWinningLine(winData) {
+            line.style.display = "block";
+            if (winData.type === 'h') {
+                line.style.width = "100%";
+                line.style.height = "5px";
+                line.style.top = winData.pos;
+                line.style.left = "0";
+                line.style.transform = "translateY(-50%)";
+            } else if (winData.type === 'v') {
+                line.style.width = "5px";
+                line.style.height = "100%";
+                line.style.left = winData.pos;
+                line.style.top = "0";
+                line.style.transform = "translateX(-50%)";
+            } else if (winData.type === 'd1') {
+                line.style.width = "5px";
+                line.style.height = "380px";
+                line.style.top = "-50px";
+                line.style.left = "50%";
+                line.style.transform = "translateX(-50%) rotate(45deg)";
+            } else if (winData.type === 'd2') {
+                line.style.width = "5px";
+                line.style.height = "380px";
+                line.style.top = "-50px";
+                line.style.left = "50%";
+                line.style.transform = "translateX(-50%) rotate(-45deg)";
+            }
+        }
+
+        function saveAndToggleScores() {
+            localStorage.setItem("xo_scores", JSON.stringify(scores));
+            updateScoreboard();
+        }
+
+        function updateScoreboard() {
+            document.getElementById("player-score").innerText = scores.player;
+            document.getElementById("draw-score").innerText = scores.draw;
+            document.getElementById("bot-score").innerText = scores.bot;
+        }
+
+        function resetScores() {
+            scores = { player: 0, bot: 0, draw: 0 };
+            saveAndToggleScores();
+            resetGame();
+        }
+
+        function resetGame() {
+            board = ["", "", "", "", "", "", "", "", ""];
+            gameActive = true;
+            statusDisplay.innerHTML = "دورك يا بطل (اضغط على أي مربع)";
+            line.style.display = "none";
+            cells.forEach(cell => {
+                cell.innerText = "";
+                cell.classList.remove("x", "o");
+            });
+        }
+    </script>
+
+</body>
+</html>
+  
