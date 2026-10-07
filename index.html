@@ -42,8 +42,6 @@
             font-size: 12px;
             margin-bottom: 12px;
         }
-        
-        /* تصميم لوحة النتائج */
         .scoreboard {
             display: flex;
             justify-content: space-between;
@@ -156,7 +154,6 @@
         <h1>إكس أو الروبوت الخارق 🤖🔥</h1>
         <p>تحدَّ العبقري.. هل تستطيع هزيمته حقاً؟</p>
 
-        <!-- صندوق النتائج -->
         <div class="scoreboard">
             <div class="score-box">
                 <span>انت (X)</span>
@@ -202,10 +199,9 @@
     <script>
         let board = ["", "", "", "", "", "", "", "", ""];
         let gameActive = true;
+        let isMyTurn = true; // متغير جديد للتحكم بالدور ومنع الضغط الخاطئ
 
-        // متغيرات النتائج وقراءتها من ذاكرة الهاتف (localStorage)
         let scores = JSON.parse(localStorage.getItem("xo_scores")) || { player: 0, bot: 0, draw: 0 };
-        
         updateScoreboard();
 
         const statusDisplay = document.getElementById("status");
@@ -213,32 +209,35 @@
         const line = document.getElementById("line");
 
         function makeMove(index) {
-            if (board[index] === "" && gameActive) {
-                board[index] = "X";
-                cells[index].innerText = "X";
-                cells[index].classList.add("x");
+            // إذا لم يكن دورك، أو المربع مليان، أو اللعبة انتهت، التغِ الضغطة فوراً!
+            if (!isMyTurn || board[index] !== "" || !gameActive) return;
 
-                let winData = checkWinFor("X");
-                if (winData) {
-                    statusDisplay.innerHTML = "🎉 مستحيل! لقد هزمت الروبوت! 🚀👑";
-                    drawWinningLine(winData);
-                    gameActive = false;
-                    scores.player++;
-                    saveAndToggleScores();
-                    return;
-                }
+            board[index] = "X";
+            cells[index].innerText = "X";
+            cells[index].classList.add("x");
 
-                if (board.every(cell => cell !== "")) {
-                    statusDisplay.innerHTML = "🤝 تعادل! عقلان عبقريان!";
-                    gameActive = false;
-                    scores.draw++;
-                    saveAndToggleScores();
-                    return;
-                }
-
-                statusDisplay.innerHTML = "🤖 الروبوت يحسب الخطوة...";
-                setTimeout(botMove, 500);
+            let winData = checkWinFor("X");
+            if (winData) {
+                statusDisplay.innerHTML = "🎉 مستحيل! لقد هزمت الروبوت! 🚀👑";
+                drawWinningLine(winData);
+                gameActive = false;
+                scores.player++;
+                saveAndToggleScores();
+                return;
             }
+
+            if (board.every(cell => cell !== "")) {
+                statusDisplay.innerHTML = "🤝 تعادل! عقلان عبقريان!";
+                gameActive = false;
+                scores.draw++;
+                saveAndToggleScores();
+                return;
+            }
+
+            // صار دور الروبوت، بنقفل اللمس عن اللاعب
+            isMyTurn = false;
+            statusDisplay.innerHTML = "🤖 الروبوت يحسب الخطوة...";
+            setTimeout(botMove, 500);
         }
 
         function botMove() {
@@ -281,6 +280,8 @@
                 return;
             }
 
+            // انتهى دور الروبوت، بنرجع الدور للاعب
+            isMyTurn = true;
             statusDisplay.innerHTML = "دورك يا بطل!";
         }
 
@@ -384,6 +385,7 @@
         function resetGame() {
             board = ["", "", "", "", "", "", "", "", ""];
             gameActive = true;
+            isMyTurn = true;
             statusDisplay.innerHTML = "دورك يا بطل (اضغط على أي مربع)";
             line.style.display = "none";
             cells.forEach(cell => {
@@ -395,4 +397,3 @@
 
 </body>
 </html>
-  
